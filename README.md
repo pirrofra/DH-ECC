@@ -1,2 +1,2 @@
 # DH-ECC
-Diffie-Hellman Protocol on Ellyptic Curves 
+Diffie-Hellman Protocol on Elliptic Curves 
