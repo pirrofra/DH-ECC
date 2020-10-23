@@ -1,6 +1,6 @@
-from dh import ECC_CDH
-import time
+import timeit
 
+#Testa DH generando simulando lo scambio di chiavi tra due utenti, e controllando che entrambi generino la stessa chiave z
 def key_test(dh):
     try:
         d1,Q1=dh.key_pair_generator()
@@ -18,28 +18,42 @@ def key_test(dh):
         print("*** Two different secret key were generated ***")
         raise ValueError("Two different secret key were generated")
 
+#Genera un certo numero di chiavi su di una curva
+#prima con double-and-add, poi con wNAF
+#e misura il tempo di esecuzione con timeit
+def bench(curve,times):
+    print("Type of curve: "+curve)
+    SETUP='''
+from __main__ import key_test
+from dh import ECC_CDH
+dh=ECC_CDH("'''+curve+'''")'''
+    code='''key_test(dh)'''
+    d_a_a=timeit.timeit(setup=SETUP,stmt=code,number=times)
+    print("*** All keys correctley generated ***")
+    print(str(times)+" keys generated using Double-and-Add in "+str(d_a_a)+" seconds")
 
-curve="curves/p256.xml"
-dh=ECC_CDH(curve)
+    SETUP='''
+from __main__ import key_test
+from dh import ECC_CDH
+dh=ECC_CDH("'''+curve+'''",wNAF=1)'''
+    code='''key_test(dh)'''
+    wNAF=timeit.timeit(setup=SETUP, stmt=code,number=times)
+    print("*** All keys correctley generated ***")
+    print(str(times)+" keys generated using wNAF in "+str(wNAF)+" seconds")
 
-start_time = time.time()
-for i in range(0,200):
-    key_test(dh)
-d_a_a=time.time() - start_time
-print("*** All keys correctley generated ***")
-print("200 keys generated using Double-and-Add in "+str(d_a_a)+" milliseconds")
+    if(wNAF<d_a_a):
+        print("*** WNAF IS FASTER***")
+    else:
+        print("*** DOUBLE AND ADD IS FASTER***")
+    print("----------------------------------------------------")
 
+def multiple_bench(curve,keyTimes,nBench):
+    for i in range(0,nBench):
+        bench(curve,keyTimes)
+    print("----------------------------------------------------")
 
-
-dh=ECC_CDH(curve,wNAF=1)
-start_time = time.time()
-for i in range(0,200):
-    key_test(dh)
-wNAF=time.time() - start_time
-print("*** All keys correctley generated ***")
-print("200 keys generated using wNAF in "+str(wNAF)+" milliseconds")
-
-if(wNAF<d_a_a):
-    print("*** WNAF IS FASTER***")
-else:
-    print("*** DOUBLE AND ADD IS FASTER***")
+multiple_bench("curves/p192.xml",1000,10)
+multiple_bench("curves/p224.xml",800,10)
+multiple_bench("curves/p256.xml",600,10)
+multiple_bench("curves/p384.xml",400,10)
+multiple_bench("curves/p521.xml",200,10)
