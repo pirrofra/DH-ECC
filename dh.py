@@ -1,4 +1,5 @@
 from curve import *
+from wnaf import *
 import os
 import struct
 import sys
@@ -9,7 +10,7 @@ class ECC_CDH:
     __n=0
     __G=None
     
-    def __init__(self,path):
+    def __init__(self,path,wNAF=0):
         tree=ET.parse(path)
         curve=tree.getroot()
         p=int(curve.find("p").text,10)
@@ -19,7 +20,11 @@ class ECC_CDH:
         G=curve.find("G")
         x=int(G.find("x").text,10)
         y=int(G.find("y").text,10)
-        self.__ecc=EllipticCurve(a,b,p)
+        if wNAF==0:
+            self.__ecc=EllipticCurve(a,b,p)
+        else:
+            w=int(curve.find("w").text,10)
+            self.__ecc=WNAF(a,b,p,w)
         self.__n=n
         self.__G=Point(x,y)
 
@@ -28,7 +33,7 @@ class ECC_CDH:
         returned_bits=os.urandom(L)
         c=int.from_bytes(returned_bits,byteorder=sys.byteorder, signed=False)
         d= (c % (self.__n -1))+1
-        Q= self.__ecc.double_and_add(d,self.__G)
+        Q= self.__ecc.mul(d,self.__G)
         if Q.x==0 and Q.y==0:
             raise ValueError("Public Key is zero")
         elif(not self.__ecc.isOnCurve(Q)):
@@ -36,7 +41,7 @@ class ECC_CDH:
         return d,Q
 
     def shared_key_generator(self,d,Q):
-        P=self.__ecc.double_and_add(d,Q)
+        P=self.__ecc.mul(d,Q)
         if P.x==0 and P.y==0:
             raise ValueError("P is zero")
         z=P.x

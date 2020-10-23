@@ -35,12 +35,12 @@ class EllipticCurve:
     def double (self,p):
         if p.x==0 and p.y==0:
             return Point(0,0)
-        lmb_n= ((3*(p.x**2))+self.__a) % self.__p
+        lmb_n= ((3*(p.x**2))+self.__a)
         lmb_d=(2*p.y) % self.__p
         if lmb_d==0:
             return Point(0,0)
         lmb_d_inv=self.__mulinv(lmb_d)
-        lmb=(lmb_n*lmb_d_inv) %self.__p
+        lmb=(lmb_n*lmb_d_inv)
         xr=((lmb**2) - (2*p.x)) % self.__p
         yr=((lmb*(p.x-xr)) -p.y) % self.__p
         return Point(xr,yr)
@@ -52,17 +52,17 @@ class EllipticCurve:
             return p
         if(p.x==q.x and p.y==q.y):
             return self.double(p)
-        lmb_n =  (q.y - p.y) % self.__p
+        lmb_n =  (q.y - p.y)
         lmb_d = (q.x - p.x) % self.__p
         if(lmb_d==0):
             return Point(0,0)
         lmd_d_inv=self.__mulinv(lmb_d)
-        lmb=(lmb_n*lmd_d_inv) % self.__p
+        lmb=(lmb_n*lmd_d_inv)
         xr=((lmb**2) - (p.x) - (q.x) ) % self.__p
         yr=(lmb*(p.x-xr) - p.y) % self.__p
         return Point(xr,yr)
 
-    def double_and_add(self,d,P):
+    def __double_and_add(self,d,P):
         R=Point(0,0)
         while d!=0:
             if d % 2 == 1:
@@ -79,4 +79,6 @@ class EllipticCurve:
         else:
             return False
 
+    def mul(self,d,P):
+        return self.__double_and_add(d,P)
 
