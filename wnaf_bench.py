@@ -19,7 +19,7 @@ def key_test(dh):
         raise ValueError("Two different secret key were generated")
 
 #Genera un certo numero di chiavi su di una curva
-#prima con double-and-add, poi con wNAF
+#con w da 2 a 6
 #e misura il tempo di esecuzione con timeit
 def bench(curve,times):
     print("Type of curve: "+curve)
