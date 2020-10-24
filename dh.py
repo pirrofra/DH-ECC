@@ -10,7 +10,7 @@ class ECC_CDH:
     __n=0
     __G=None
     #Costruttore
-    def __init__(self,path,wNAF=0):
+    def __init__(self,path,wNAF=0,w=4):
         tree=ET.parse(path)
         curve=tree.getroot()
         #Lettera dei valori dal file .xml in path
@@ -25,7 +25,6 @@ class ECC_CDH:
         if wNAF==0:
             self.__ecc=EllipticCurve(a,b,p)
         else:
-            w=int(curve.find("w").text,10)
             self.__ecc=WNAF(a,b,p,w)
         self.__n=n
         self.__G=Point(x,y)
